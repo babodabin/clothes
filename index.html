@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="옷장">
+<title>옷장 v0.1 (열기 테스트)</title>
+<style>
+:root{
+  --bg:#EEF0EC; --ink:#1E2320; --sub:#6B736D; --line:#CDD2CC;
+  --card:#FFFFFF; --ok:#2F7A4F; --no:#B3412E; --accent:#34495E;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#151816; --ink:#E6E9E5; --sub:#98A09A; --line:#2E3430; --card:#1E2320; --accent:#9DB3C9; }
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  -webkit-tap-highlight-color:transparent}
+header{padding:18px 18px 8px}
+h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-0.5px}
+.ver{font-size:13px;color:var(--sub);margin-top:4px}
+.guide{margin:10px 18px 14px;font-size:14px;line-height:1.55;color:var(--sub)}
+ul{list-style:none;margin:0;padding:0 12px 24px}
+li{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:14px;margin-bottom:10px}
+.name{font-size:17px;font-weight:700}
+.url{font-size:12px;color:var(--sub);word-break:break-all;margin:3px 0 10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button,a.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:transparent;
+  color:var(--ink);border-radius:10px;padding:8px 12px;text-decoration:none}
+button.main{background:var(--accent);color:var(--card);border-color:var(--accent)}
+.res{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--sub)}
+.res button{padding:5px 10px;font-size:13px}
+.res button.on-ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.res button.on-no{background:var(--no);color:#fff;border-color:var(--no)}
+.add{margin:0 12px 30px;padding:14px;border:1px dashed var(--line);border-radius:14px}
+.add input{width:100%;font:inherit;font-size:15px;padding:10px;border-radius:10px;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);margin-bottom:8px}
+.del{margin-left:auto;color:var(--no);border-color:transparent}
+/* 앱 안 보기 */
+#viewer{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:10;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#viewer.show{display:flex}
+#vbar{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+#vtitle{flex:1;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#frame{flex:1;width:100%;border:0;background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <h1>옷장</h1>
+  <div class="ver">v0.1 · 사이트 열기 테스트 빌드</div>
+</header>
+<p class="guide">
+각 사이트에서 <b>앱 안에서 열기</b>를 눌러보세요. 사이트가 보이면 ○, 빈 화면이거나 오류면 ×를 눌러 기록합니다.
+<b>링크로 열기</b>는 사파리로 나가는지, 앱 위에 창으로 뜨는지 확인용입니다. 홈 화면에 추가한 상태에서 테스트해야 정확합니다.
+</p>
+<ul id="list"></ul>
+<div class="add">
+  <input id="aName" placeholder="사이트 이름">
+  <input id="aUrl" placeholder="주소 (https://...)" inputmode="url" autocapitalize="off">
+  <button class="main" id="aBtn">사이트 추가</button>
+</div>
+
+<div id="viewer">
+  <div id="vbar">
+    <button id="vClose">닫기</button>
+    <div id="vtitle"></div>
+    <a class="btn" id="vOut" href="#" target="_blank" rel="noopener">밖에서 열기</a>
+  </div>
+  <iframe id="frame" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+
+<script>
+const KEY='okjang_v01';
+const DEFAULT=[
+  {name:'머스트잇',url:'https://m.web.mustit.co.kr/v2/m/brand/746'},
+  {name:'브루먼',url:'https://bruman.co.kr'},
+  {name:'그라미치',url:'https://www.gramicci.kr'},
+  {name:'더로지',url:'https://thelodge.kr'},
+  {name:'EQL',url:'https://ch.eqlstore.com/event/7878'},
+  {name:'쿠팡',url:'https://m.coupang.com'}
+];
+let data;
+try{ data=JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+if(!data||!Array.isArray(data.sites)) data={sites:DEFAULT.map(s=>({...s,result:''}))};
+function save(){ try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){} }
+
+const list=document.getElementById('list');
+function render(){
+  list.innerHTML='';
+  data.sites.forEach((s,i)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`
+      <div class="name"></div><div class="url"></div>
+      <div class="row">
+        <button class="main" data-a="in">앱 안에서 열기</button>
+        <a class="btn" href="" rel="noopener">링크로 열기</a>
+      </div>
+      <div class="res">앱 안 결과
+        <button data-a="ok" class="${s.result==='ok'?'on-ok':''}">○ 보임</button>
+        <button data-a="no" class="${s.result==='no'?'on-no':''}">× 안 보임</button>
+        <button data-a="del" class="del">삭제</button>
+      </div>`;
+    li.querySelector('.name').textContent=s.name;
+    li.querySelector('.url').textContent=s.url;
+    li.querySelector('a.btn').href=s.url;
+    li.addEventListener('click',e=>{
+      const a=e.target.dataset.a; if(!a) return;
+      if(a==='in') openIn(s);
+      if(a==='ok'||a==='no'){ s.result=(s.result===a?'':a); save(); render(); }
+      if(a==='del' && confirm(s.name+' 삭제할까요?')){ data.sites.splice(i,1); save(); render(); }
+    });
+    list.appendChild(li);
+  });
+}
+const viewer=document.getElementById('viewer'), frame=document.getElementById('frame');
+function openIn(s){
+  document.getElementById('vtitle').textContent=s.name;
+  document.getElementById('vOut').href=s.url;
+  frame.src=s.url; viewer.classList.add('show');
+}
+document.getElementById('vClose').onclick=()=>{ viewer.classList.remove('show'); frame.src='about:blank'; };
+document.getElementById('aBtn').onclick=()=>{
+  const n=document.getElementById('aName').value.trim();
+  let u=document.getElementById('aUrl').value.trim();
+  if(!n||!u){ alert('이름과 주소를 모두 입력하세요.'); return; }
+  if(!/^https?:\/\//.test(u)) u='https://'+u;
+  data.sites.push({name:n,url:u,result:''}); save(); render();
+  document.getElementById('aName').value=''; document.getElementById('aUrl').value='';
+};
+render();
+</script>
+</body>
+</html>
