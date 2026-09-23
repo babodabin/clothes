@@ -7,136 +7,419 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="옷장">
-<title>옷장 v0.1 (열기 테스트)</title>
+<title>옷장 v0.2</title>
 <style>
 :root{
   --bg:#EEF0EC; --ink:#1E2320; --sub:#6B736D; --line:#CDD2CC;
-  --card:#FFFFFF; --ok:#2F7A4F; --no:#B3412E; --accent:#34495E;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  --card:#FFFFFF; --ok:#2F7A4F; --no:#B3412E; --accent:#34495E; --cp:#C4302B;
 }
 @media (prefers-color-scheme:dark){
-  :root{ --bg:#151816; --ink:#E6E9E5; --sub:#98A09A; --line:#2E3430; --card:#1E2320; --accent:#9DB3C9; }
+  :root{ --bg:#151816; --ink:#E6E9E5; --sub:#98A09A; --line:#2E3430; --card:#1E2320; --accent:#9DB3C9; --cp:#E0645D; }
 }
-*,*::before,*::after{box-sizing:inherit}
+*,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--ink);
   font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-  -webkit-tap-highlight-color:transparent}
-header{padding:18px 18px 8px}
+  -webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top,0px)}
+header{display:flex;align-items:baseline;gap:10px;padding:16px 18px 6px}
 h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-0.5px}
-.ver{font-size:13px;color:var(--sub);margin-top:4px}
-.guide{margin:10px 18px 14px;font-size:14px;line-height:1.55;color:var(--sub)}
-ul{list-style:none;margin:0;padding:0 12px 24px}
-li{background:var(--card);border:1px solid var(--line);border-radius:14px;
-  padding:14px;margin-bottom:10px}
-.name{font-size:17px;font-weight:700}
-.url{font-size:12px;color:var(--sub);word-break:break-all;margin:3px 0 10px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-button,a.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:transparent;
-  color:var(--ink);border-radius:10px;padding:8px 12px;text-decoration:none}
+.ver{font-size:13px;color:var(--sub)}
+main{padding:6px 12px calc(90px + env(safe-area-inset-bottom,0px))}
+.hint{font-size:14px;line-height:1.55;color:var(--sub);margin:6px 6px 14px}
+button,a.btn,select{font:inherit;font-size:14px;border:1px solid var(--line);background:transparent;
+  color:var(--ink);border-radius:10px;padding:8px 12px;text-decoration:none;display:inline-block}
 button.main{background:var(--accent);color:var(--card);border-color:var(--accent)}
-.res{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--sub)}
-.res button{padding:5px 10px;font-size:13px}
-.res button.on-ok{background:var(--ok);color:#fff;border-color:var(--ok)}
-.res button.on-no{background:var(--no);color:#fff;border-color:var(--no)}
-.add{margin:0 12px 30px;padding:14px;border:1px dashed var(--line);border-radius:14px}
-.add input{width:100%;font:inherit;font-size:15px;padding:10px;border-radius:10px;
-  border:1px solid var(--line);background:var(--card);color:var(--ink);margin-bottom:8px}
-.del{margin-left:auto;color:var(--no);border-color:transparent}
-/* 앱 안 보기 */
-#viewer{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:10;
+button.cp{background:var(--cp);color:#fff;border-color:var(--cp)}
+button.danger{color:var(--no)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.name{font-size:17px;font-weight:700}
+.small{font-size:12px;color:var(--sub);word-break:break-all}
+input,textarea{width:100%;font:inherit;font-size:16px;padding:10px;border-radius:10px;
+  border:1px solid var(--line);background:var(--card);color:var(--ink)}
+textarea{min-height:70px;resize:vertical}
+label{display:block;font-size:13px;color:var(--sub);margin:10px 0 4px}
+/* tabs */
+#tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+#tabs button{flex:1;border:0;border-radius:0;padding:14px 0;font-size:15px;color:var(--sub)}
+#tabs button.on{color:var(--ink);font-weight:700}
+/* grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card .ph{aspect-ratio:3/4;background:var(--line);display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:13px}
+.card .ph img{width:100%;height:100%;object-fit:cover}
+.card .tx{padding:9px 10px 11px}
+.card .nm{font-size:14px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.card .pr{font-size:14px;margin-top:2px}
+.tag{display:inline-block;font-size:11px;color:var(--cp);border:1px solid var(--cp);border-radius:6px;padding:1px 5px;margin-top:5px}
+.line{display:flex;gap:10px;align-items:center}
+.thumb{width:62px;height:80px;border-radius:8px;object-fit:cover;background:var(--line);flex:none}
+/* overlays */
+.over{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-#viewer.show{display:flex}
-#vbar{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
-#vtitle{flex:1;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.over.show{display:flex}
+#viewer{z-index:20}
+#sheet{z-index:30}
+.bar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);flex:none}
+.bar .t{flex:1;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bar button,.bar a.btn{padding:7px 10px;font-size:13px}
 #frame{flex:1;width:100%;border:0;background:#fff}
+#vtop{display:none;flex:none;padding:10px;border-bottom:1px solid var(--line);background:var(--card)}
+#viewer.split #vtop{display:block}
+#sheetBody{flex:1;overflow:auto;padding:14px 14px 40px;-webkit-overflow-scrolling:touch}
+.big{width:100%;max-height:420px;object-fit:contain;border-radius:12px;background:var(--line)}
+table.f{width:100%;border-collapse:collapse;margin:12px 0}
+table.f td{padding:7px 4px;border-bottom:1px solid var(--line);font-size:15px;vertical-align:top}
+table.f td:first-child{color:var(--sub);width:70px;font-size:13px}
+/* compare */
+.cmpWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -12px;padding:0 12px}
+table.cmp{border-collapse:separate;border-spacing:0}
+table.cmp th,table.cmp td{min-width:140px;max-width:160px;padding:8px;border-bottom:1px solid var(--line);
+  font-size:14px;vertical-align:top;text-align:left;background:var(--card)}
+table.cmp th.rl,table.cmp td.rl{min-width:56px;max-width:56px;position:sticky;left:0;z-index:1;
+  font-size:12px;color:var(--sub);background:var(--bg)}
+table.cmp img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--line)}
+.up{color:var(--no)} .down{color:var(--ok)}
+.origin{border-top:3px solid var(--accent)} .cand{border-top:3px solid var(--cp)}
 </style>
 </head>
 <body>
-<header>
-  <h1>옷장</h1>
-  <div class="ver">v0.1 · 사이트 열기 테스트 빌드</div>
-</header>
-<p class="guide">
-각 사이트에서 <b>앱 안에서 열기</b>를 눌러보세요. 사이트가 보이면 ○, 빈 화면이거나 오류면 ×를 눌러 기록합니다.
-<b>링크로 열기</b>는 사파리로 나가는지, 앱 위에 창으로 뜨는지 확인용입니다. 홈 화면에 추가한 상태에서 테스트해야 정확합니다.
-</p>
-<ul id="list"></ul>
-<div class="add">
-  <input id="aName" placeholder="사이트 이름">
-  <input id="aUrl" placeholder="주소 (https://...)" inputmode="url" autocapitalize="off">
-  <button class="main" id="aBtn">사이트 추가</button>
+<header><h1>옷장</h1><span class="ver">v0.2</span></header>
+<main id="main"></main>
+<nav id="tabs">
+  <button data-tab="sites">사이트</button>
+  <button data-tab="cart">장바구니</button>
+  <button data-tab="cp">쿠팡 후보</button>
+  <button data-tab="cmp">비교</button>
+</nav>
+
+<div class="over" id="viewer">
+  <div class="bar">
+    <button id="vClose">닫기</button>
+    <div class="t" id="vTitle"></div>
+    <button id="vAdd" class="main">담기</button>
+    <a class="btn" id="vOut" href="#" target="_blank" rel="noopener">사파리</a>
+  </div>
+  <div id="vtop"></div>
+  <iframe id="frame"></iframe>
 </div>
 
-<div id="viewer">
-  <div id="vbar">
-    <button id="vClose">닫기</button>
-    <div id="vtitle"></div>
-    <a class="btn" id="vOut" href="#" target="_blank" rel="noopener">밖에서 열기</a>
-  </div>
-  <iframe id="frame" referrerpolicy="no-referrer-when-downgrade"></iframe>
+<div class="over" id="sheet">
+  <div class="bar"><button id="sClose">닫기</button><div class="t" id="sTitle"></div></div>
+  <div id="sheetBody"></div>
 </div>
 
 <script>
-const KEY='okjang_v01';
-const DEFAULT=[
-  {name:'머스트잇',url:'https://m.web.mustit.co.kr/v2/m/brand/746'},
-  {name:'브루먼',url:'https://bruman.co.kr'},
-  {name:'그라미치',url:'https://www.gramicci.kr'},
-  {name:'더로지',url:'https://thelodge.kr'},
-  {name:'EQL',url:'https://ch.eqlstore.com/event/7878'},
-  {name:'쿠팡',url:'https://m.coupang.com'}
-];
-let data;
-try{ data=JSON.parse(localStorage.getItem(KEY)); }catch(e){}
-if(!data||!Array.isArray(data.sites)) data={sites:DEFAULT.map(s=>({...s,result:''}))};
-function save(){ try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){} }
+const VERSION='v0.2';
+const KEY='okjang_data';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const won=n=>(n===''||n==null||isNaN(n))?'':Number(n).toLocaleString('ko-KR')+'원';
+const CP_SEARCH=q=>'https://m.coupang.com/nm/search?q='+encodeURIComponent(q||'');
+const FIELDS=[['color','색상'],['material','소재'],['fit','핏'],['size','사이즈'],['memo','메모']];
 
-const list=document.getElementById('list');
+const DEFAULT_SITES=[
+  {name:'머스트잇',url:'https://m.web.mustit.co.kr/v2/m/brand/746',mode:'in'},
+  {name:'브루먼',url:'https://bruman.co.kr',mode:'in'},
+  {name:'그라미치',url:'https://www.gramicci.kr',mode:'in'},
+  {name:'더로지',url:'https://thelodge.kr',mode:'in'},
+  {name:'EQL',url:'https://ch.eqlstore.com/event/7878',mode:'out'},
+  {name:'쿠팡',url:'https://m.coupang.com',mode:'in'}
+];
+
+/* ---------- 저장 ---------- */
+let data=null;
+try{ data=JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+if(!data||!Array.isArray(data.sites)){
+  data={sites:[],items:[],cp:[]};
+  let old=null; try{ old=JSON.parse(localStorage.getItem('okjang_v01')); }catch(e){}
+  if(old&&Array.isArray(old.sites)){
+    data.sites=old.sites.map(s=>({id:uid(),name:s.name,url:s.url,
+      mode:(s.result==='no'||s.name==='EQL')?'out':'in'}));
+  }else data.sites=DEFAULT_SITES.map(s=>({id:uid(),...s}));
+}
+data.items=data.items||[]; data.cp=data.cp||[];
+function save(){
+  try{ localStorage.setItem(KEY,JSON.stringify(data)); return true; }
+  catch(e){ alert('저장 공간이 가득 찼습니다. 사진이 있는 항목을 몇 개 지운 뒤 다시 저장하세요.'); return false; }
+}
+
+/* ---------- 탭 ---------- */
+let tab='sites', cmpId='';
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});
 function render(){
-  list.innerHTML='';
-  data.sites.forEach((s,i)=>{
-    const li=document.createElement('li');
-    li.innerHTML=`
-      <div class="name"></div><div class="url"></div>
-      <div class="row">
-        <button class="main" data-a="in">앱 안에서 열기</button>
-        <a class="btn" href="" rel="noopener">링크로 열기</a>
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  ({sites:renderSites,cart:renderCart,cp:renderCp,cmp:renderCmp})[tab]();
+  window.scrollTo(0,0);
+}
+
+/* ---------- 링크 열기 ---------- */
+function hostOf(u){ try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return '';} }
+function siteFor(u){ const h=hostOf(u); return data.sites.find(s=>hostOf(s.url)===h); }
+function openUrl(url,title,site){
+  const s=site||siteFor(url);
+  if(s&&s.mode==='out'){ window.open(url,'_blank'); return; }
+  openViewer(url,title||(s?s.name:''),s?s.name:'');
+}
+const viewer=$('#viewer'), frame=$('#frame');
+let viewerSite='', viewerParent='';
+function openViewer(url,title,siteName){
+  viewer.classList.remove('split'); viewerSite=siteName; viewerParent='';
+  $('#vTitle').textContent=title; $('#vOut').href=url;
+  $('#vAdd').textContent='장바구니에 담기'; $('#vAdd').className='main';
+  frame.src=url; viewer.classList.add('show');
+}
+$('#vClose').onclick=()=>{ viewer.classList.remove('show'); frame.src='about:blank'; render(); };
+$('#vAdd').onclick=()=>{
+  if(viewer.classList.contains('split')) openForm('cp',null,{parent:viewerParent});
+  else openForm('item',null,{site:viewerSite});
+};
+
+/* 쿠팡 나란히 보기 */
+function openCoupang(itemId){
+  const it=data.items.find(x=>x.id===itemId); if(!it) return;
+  viewerParent=itemId;
+  const q=it.name||'';
+  $('#vTitle').textContent='쿠팡에서 비슷한 옷 찾기';
+  $('#vAdd').textContent='후보 추가'; $('#vAdd').className='cp';
+  $('#vtop').innerHTML=`
+    <div class="line">
+      ${it.photo?`<img class="thumb" src="${it.photo}">`:'<div class="thumb"></div>'}
+      <div style="flex:1;min-width:0">
+        <div class="name" style="font-size:15px">${esc(it.name)||'이름 없음'}</div>
+        <div class="small">${esc(won(it.price))} ${esc(it.site)}</div>
+        <div class="small">${FIELDS.slice(0,4).map(f=>it[f[0]]).filter(Boolean).map(esc).join(' / ')}</div>
       </div>
-      <div class="res">앱 안 결과
-        <button data-a="ok" class="${s.result==='ok'?'on-ok':''}">○ 보임</button>
-        <button data-a="no" class="${s.result==='no'?'on-no':''}">× 안 보임</button>
-        <button data-a="del" class="del">삭제</button>
+    </div>
+    <div class="row" style="margin-top:8px;flex-wrap:nowrap">
+      <input id="cpQ" value="${esc(q)}" placeholder="쿠팡 검색어">
+      <button id="cpGo" class="cp" style="flex:none">검색</button>
+    </div>`;
+  const go=()=>{ const u=CP_SEARCH($('#cpQ').value.trim()); frame.src=u; $('#vOut').href=u; };
+  $('#cpGo').onclick=go;
+  $('#cpQ').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); go(); } };
+  viewer.classList.add('split','show');
+  go();
+}
+
+/* ---------- 사이트 탭 ---------- */
+function renderSites(){
+  $('#main').innerHTML=`
+    <p class="hint">사이트를 눌러 구경하다가 마음에 드는 옷이 있으면 위쪽 <b>장바구니에 담기</b>를 누르세요.
+    앱 안에서 안 보이는 사이트는 여는 방식을 <b>사파리</b>로 바꾸면 됩니다.</p>
+    <div id="sl"></div>
+    <div class="box" style="border-style:dashed">
+      <label>사이트 이름</label><input id="aName">
+      <label>주소</label><input id="aUrl" inputmode="url" autocapitalize="off" placeholder="https://">
+      <div class="row" style="margin-top:10px"><button class="main" id="aBtn">사이트 추가</button></div>
+    </div>`;
+  const sl=$('#sl');
+  data.sites.forEach(s=>{
+    const d=document.createElement('div'); d.className='box';
+    d.innerHTML=`<div class="name">${esc(s.name)}</div><div class="small" style="margin:3px 0 10px">${esc(s.url)}</div>
+      <div class="row">
+        <button class="main" data-a="open">열기</button>
+        <button data-a="mode">${s.mode==='out'?'사파리로 열림':'앱 안에서 열림'}</button>
+        <button data-a="del" class="danger" style="margin-left:auto">삭제</button>
       </div>`;
-    li.querySelector('.name').textContent=s.name;
-    li.querySelector('.url').textContent=s.url;
-    li.querySelector('a.btn').href=s.url;
-    li.addEventListener('click',e=>{
+    d.onclick=e=>{
       const a=e.target.dataset.a; if(!a) return;
-      if(a==='in') openIn(s);
-      if(a==='ok'||a==='no'){ s.result=(s.result===a?'':a); save(); render(); }
-      if(a==='del' && confirm(s.name+' 삭제할까요?')){ data.sites.splice(i,1); save(); render(); }
-    });
-    list.appendChild(li);
+      if(a==='open') openUrl(s.url,s.name,s);
+      if(a==='mode'){ s.mode=s.mode==='out'?'in':'out'; save(); renderSites(); }
+      if(a==='del'&&confirm(s.name+' 사이트를 삭제할까요?')){ data.sites=data.sites.filter(x=>x!==s); save(); renderSites(); }
+    };
+    sl.appendChild(d);
+  });
+  $('#aBtn').onclick=()=>{
+    const n=$('#aName').value.trim(); let u=$('#aUrl').value.trim();
+    if(!n||!u){ alert('이름과 주소를 모두 입력하세요.'); return; }
+    if(!/^https?:\/\//.test(u)) u='https://'+u;
+    data.sites.push({id:uid(),name:n,url:u,mode:'in'}); save(); renderSites();
+  };
+}
+
+/* ---------- 장바구니 탭 ---------- */
+function cpCount(id){ return data.cp.filter(c=>c.parent===id).length; }
+function renderCart(){
+  const items=[...data.items].reverse();
+  $('#main').innerHTML=`
+    <div class="row" style="margin:4px 0 12px"><button class="main" id="addItem">직접 추가</button>
+      <span class="small">${items.length}벌</span></div>
+    ${items.length?'<div class="grid" id="g"></div>':'<p class="hint">비어 있습니다. 사이트에서 옷을 보다가 <b>장바구니에 담기</b>를 누르거나 <b>직접 추가</b>로 넣으세요.</p>'}`;
+  $('#addItem').onclick=()=>openForm('item',null,{});
+  const g=$('#g'); if(!g) return;
+  items.forEach(it=>{
+    const n=cpCount(it.id);
+    const c=document.createElement('div'); c.className='card';
+    c.innerHTML=`<div class="ph">${it.photo?`<img src="${it.photo}">`:'사진 없음'}</div>
+      <div class="tx"><div class="nm">${esc(it.name)||'이름 없음'}</div>
+      <div class="pr">${esc(won(it.price))}</div><div class="small">${esc(it.site)}</div>
+      ${n?`<span class="tag">쿠팡 후보 ${n}</span>`:''}</div>`;
+    c.onclick=()=>showDetail('item',it.id);
+    g.appendChild(c);
   });
 }
-const viewer=document.getElementById('viewer'), frame=document.getElementById('frame');
-function openIn(s){
-  document.getElementById('vtitle').textContent=s.name;
-  document.getElementById('vOut').href=s.url;
-  frame.src=s.url; viewer.classList.add('show');
+
+/* ---------- 쿠팡 후보 탭 ---------- */
+function renderCp(){
+  const list=[...data.cp].reverse();
+  $('#main').innerHTML=`
+    <p class="hint">실제 쿠팡 장바구니를 쓰려면 <b>쿠팡 사파리로 열기</b>에서 담으세요. 앱 안 쿠팡은 로그인이 안 될 수 있어서, 여기 <b>쿠팡 후보</b>는 앱에만 따로 저장됩니다.</p>
+    <div class="row" style="margin-bottom:12px">
+      <a class="btn" href="https://m.coupang.com" target="_blank" rel="noopener">쿠팡 사파리로 열기</a>
+      <button class="cp" id="addCp">후보 직접 추가</button>
+    </div>
+    <div id="cl"></div>
+    ${list.length?'':'<p class="hint">비어 있습니다. 장바구니 옷에서 <b>쿠팡에서 찾기</b>를 누르면 비슷한 옷을 찾아 후보로 넣을 수 있습니다.</p>'}`;
+  $('#addCp').onclick=()=>openForm('cp',null,{});
+  const cl=$('#cl');
+  list.forEach(c=>{
+    const p=data.items.find(i=>i.id===c.parent);
+    const d=document.createElement('div'); d.className='box line';
+    d.innerHTML=`${c.photo?`<img class="thumb" src="${c.photo}">`:'<div class="thumb"></div>'}
+      <div style="min-width:0"><div class="name" style="font-size:15px">${esc(c.name)||'이름 없음'}</div>
+      <div>${esc(won(c.price))}</div>
+      <div class="small">${p?'비교 대상: '+esc(p.name):'연결된 옷 없음'}</div></div>`;
+    d.onclick=()=>showDetail('cp',c.id);
+    cl.appendChild(d);
+  });
 }
-document.getElementById('vClose').onclick=()=>{ viewer.classList.remove('show'); frame.src='about:blank'; };
-document.getElementById('aBtn').onclick=()=>{
-  const n=document.getElementById('aName').value.trim();
-  let u=document.getElementById('aUrl').value.trim();
-  if(!n||!u){ alert('이름과 주소를 모두 입력하세요.'); return; }
-  if(!/^https?:\/\//.test(u)) u='https://'+u;
-  data.sites.push({name:n,url:u,result:''}); save(); render();
-  document.getElementById('aName').value=''; document.getElementById('aUrl').value='';
-};
+
+/* ---------- 비교 탭 ---------- */
+function renderCmp(){
+  if(!data.items.length){ $('#main').innerHTML='<p class="hint">장바구니에 옷을 먼저 넣으세요.</p>'; return; }
+  if(!data.items.find(i=>i.id===cmpId)) cmpId=data.items[data.items.length-1].id;
+  const it=data.items.find(i=>i.id===cmpId);
+  const cands=data.cp.filter(c=>c.parent===cmpId);
+  const cols=[it,...cands];
+  const base=Number(it.price);
+  const diff=p=>{ if(p===''||p==null||isNaN(p)||it.price===''||isNaN(base)) return '';
+    const d=Number(p)-base; if(d===0) return '<div class="small">같음</div>';
+    return `<div class="${d>0?'up':'down'}" style="font-size:13px">${d>0?'+':'−'}${Math.abs(d).toLocaleString('ko-KR')}원</div>`; };
+  const cell=(c,i,html)=>`<td class="${i===0?'':''}">${html}</td>`;
+  let rows='';
+  rows+=`<tr><th class="rl"></th>${cols.map((c,i)=>`<th class="${i?'cand':'origin'}"><div class="small">${i?'쿠팡 후보 '+i:'원래 옷'}</div></th>`).join('')}</tr>`;
+  rows+=`<tr><td class="rl">사진</td>${cols.map(c=>`<td>${c.photo?`<img src="${c.photo}">`:'<div class="small">없음</div>'}</td>`).join('')}</tr>`;
+  rows+=`<tr><td class="rl">이름</td>${cols.map(c=>`<td><b>${esc(c.name)}</b></td>`).join('')}</tr>`;
+  rows+=`<tr><td class="rl">가격</td>${cols.map((c,i)=>`<td>${esc(won(c.price))}${i?diff(c.price):''}</td>`).join('')}</tr>`;
+  FIELDS.forEach(f=>{ rows+=`<tr><td class="rl">${f[1]}</td>${cols.map(c=>`<td>${esc(c[f[0]])}</td>`).join('')}</tr>`; });
+  rows+=`<tr><td class="rl"></td>${cols.map((c,i)=>`<td><div class="row">${c.url?`<button data-o="${i}">열기</button>`:''}<button data-e="${i}">수정</button></div></td>`).join('')}</tr>`;
+  $('#main').innerHTML=`
+    <label style="margin-top:0">비교할 옷</label>
+    <select id="cmpSel" style="width:100%;margin-bottom:12px">${[...data.items].reverse().map(i=>`<option value="${i.id}" ${i.id===cmpId?'selected':''}>${esc(i.name||'이름 없음')} ${esc(won(i.price))}</option>`).join('')}</select>
+    <div class="row" style="margin-bottom:12px"><button class="cp" id="cmpFind">쿠팡에서 찾기</button>
+      <span class="small">후보 ${cands.length}개</span></div>
+    <div class="cmpWrap"><table class="cmp">${rows}</table></div>`;
+  $('#cmpSel').onchange=e=>{ cmpId=e.target.value; renderCmp(); };
+  $('#cmpFind').onclick=()=>openCoupang(cmpId);
+  $('#main').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ const c=cols[b.dataset.o]; openUrl(c.url,c.name); });
+  $('#main').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.e; openForm(i?'cp':'item',cols[i],{}); });
+}
+
+/* ---------- 상세 ---------- */
+const sheet=$('#sheet');
+$('#sClose').onclick=()=>{ sheet.classList.remove('show'); if(!viewer.classList.contains('show')) render(); };
+function showDetail(kind,id){
+  const arr=kind==='item'?data.items:data.cp; const o=arr.find(x=>x.id===id); if(!o) return;
+  const p=kind==='cp'?data.items.find(i=>i.id===o.parent):null;
+  $('#sTitle').textContent=kind==='item'?'장바구니 옷':'쿠팡 후보';
+  $('#sheetBody').innerHTML=`
+    ${o.photo?`<img class="big" src="${o.photo}">`:''}
+    <div class="name" style="margin-top:12px;font-size:20px">${esc(o.name)||'이름 없음'}</div>
+    <div style="font-size:17px;margin-top:4px">${esc(won(o.price))}</div>
+    <table class="f">
+      ${kind==='item'?`<tr><td>사이트</td><td>${esc(o.site)}</td></tr>`:`<tr><td>비교 대상</td><td>${p?esc(p.name):'없음'}</td></tr>`}
+      ${FIELDS.map(f=>`<tr><td>${f[1]}</td><td>${esc(o[f[0]])}</td></tr>`).join('')}
+      <tr><td>링크</td><td class="small">${esc(o.url)}</td></tr>
+    </table>
+    <div class="row">
+      ${kind==='item'?'<button class="cp" id="dFind">쿠팡에서 찾기</button><button class="main" id="dCmp">비교하기</button>':''}
+      ${o.url?'<button id="dOpen">링크 열기</button>':''}
+      <button id="dEdit">수정</button>
+      <button id="dDel" class="danger">삭제</button>
+    </div>`;
+  if(kind==='item'){
+    $('#dFind').onclick=()=>{ sheet.classList.remove('show'); openCoupang(o.id); };
+    $('#dCmp').onclick=()=>{ sheet.classList.remove('show'); cmpId=o.id; tab='cmp'; render(); };
+  }
+  if(o.url) $('#dOpen').onclick=()=>{ sheet.classList.remove('show'); openUrl(o.url,o.name); };
+  $('#dEdit').onclick=()=>openForm(kind,o,{});
+  $('#dDel').onclick=()=>{
+    const extra=kind==='item'&&cpCount(o.id)?` (연결된 쿠팡 후보 ${cpCount(o.id)}개는 남고 연결만 풀립니다)`:'';
+    if(!confirm('삭제할까요?'+extra)) return;
+    if(kind==='item'){ data.items=data.items.filter(x=>x!==o); data.cp.forEach(c=>{ if(c.parent===o.id) c.parent=''; }); }
+    else data.cp=data.cp.filter(x=>x!==o);
+    save(); sheet.classList.remove('show'); render();
+  };
+  sheet.classList.add('show'); $('#sheetBody').scrollTop=0;
+}
+
+/* ---------- 입력 폼 ---------- */
+function compress(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>{ const img=new Image();
+      img.onload=()=>{ const M=720; let w=img.width,h=img.height;
+        if(w>M||h>M){ const k=M/Math.max(w,h); w=Math.round(w*k); h=Math.round(h*k); }
+        const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h); res(cv.toDataURL('image/jpeg',0.72)); };
+      img.onerror=rej; img.src=r.result; };
+    r.onerror=rej; r.readAsDataURL(file);
+  });
+}
+function openForm(kind,obj,preset){
+  const o=obj?{...obj}:{photo:'',name:'',price:'',url:'',site:preset.site||'',parent:preset.parent||'',
+    color:'',material:'',fit:'',size:'',memo:''};
+  $('#sTitle').textContent=(obj?'수정: ':'')+(kind==='item'?'장바구니 옷':'쿠팡 후보');
+  const siteOpts=['',...data.sites.map(s=>s.name)];
+  if(o.site&&!siteOpts.includes(o.site)) siteOpts.push(o.site);
+  $('#sheetBody').innerHTML=`
+    <label>사진</label>
+    <div id="phBox">${o.photo?`<img class="big" src="${o.photo}">`:''}</div>
+    <div class="row" style="margin-top:8px">
+      <button class="main" id="phPick">${o.photo?'사진 바꾸기':'사진 찍기 / 고르기'}</button>
+      ${o.photo?'<button id="phDel" class="danger">사진 빼기</button>':''}
+    </div>
+    <input type="file" id="phFile" accept="image/*" style="display:none">
+    <label>이름</label><input id="fName" value="${esc(o.name)}">
+    <label>가격 (숫자만)</label><input id="fPrice" inputmode="numeric" value="${esc(o.price)}">
+    ${kind==='item'
+      ?`<label>사이트</label><select id="fSite" style="width:100%">${siteOpts.map(s=>`<option ${s===o.site?'selected':''}>${esc(s)}</option>`).join('')}</select>`
+      :`<label>비교 대상 (장바구니 옷)</label><select id="fParent" style="width:100%"><option value="">연결 안 함</option>${[...data.items].reverse().map(i=>`<option value="${i.id}" ${i.id===o.parent?'selected':''}>${esc(i.name||'이름 없음')}</option>`).join('')}</select>`}
+    <label>링크 (복사해서 붙여넣기, 없어도 됨)</label><input id="fUrl" inputmode="url" autocapitalize="off" value="${esc(o.url)}">
+    ${FIELDS.map(f=>f[0]==='memo'
+      ?`<label>${f[1]}</label><textarea id="f_${f[0]}">${esc(o[f[0]])}</textarea>`
+      :`<label>${f[1]}</label><input id="f_${f[0]}" value="${esc(o[f[0]])}">`).join('')}
+    <div class="row" style="margin-top:16px"><button class="${kind==='item'?'main':'cp'}" id="fSave">저장</button></div>`;
+  $('#phPick').onclick=()=>$('#phFile').click();
+  if($('#phDel')) $('#phDel').onclick=()=>{ o.photo=''; $('#phBox').innerHTML=''; };
+  $('#phFile').onchange=async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    try{ o.photo=await compress(f); $('#phBox').innerHTML=`<img class="big" src="${o.photo}">`; }
+    catch(err){ alert('사진을 읽지 못했습니다. 다른 사진으로 다시 시도하세요.'); }
+  };
+  $('#fSave').onclick=()=>{
+    o.name=$('#fName').value.trim();
+    o.price=$('#fPrice').value.replace(/[^0-9]/g,'');
+    o.url=$('#fUrl').value.trim();
+    if(o.url&&!/^https?:\/\//.test(o.url)) o.url='https://'+o.url;
+    FIELDS.forEach(f=>o[f[0]]=$('#f_'+f[0]).value.trim());
+    if(kind==='item') o.site=$('#fSite').value; else o.parent=$('#fParent').value;
+    if(!o.name&&!o.photo){ alert('이름이나 사진 중 하나는 넣어주세요.'); return; }
+    const arr=kind==='item'?data.items:data.cp;
+    const backup=JSON.stringify(data);
+    if(obj){ Object.assign(arr.find(x=>x.id===obj.id),o); }
+    else{ o.id=uid(); o.created=Date.now(); arr.push(o); }
+    if(!save()){ data=JSON.parse(backup); return; }
+    sheet.classList.remove('show');
+    if(!viewer.classList.contains('show')) render();
+  };
+  sheet.classList.add('show'); $('#sheetBody').scrollTop=0;
+}
+
 render();
 </script>
 </body>
